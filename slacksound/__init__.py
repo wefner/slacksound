@@ -32,6 +32,8 @@ Import all parts from slacksound here
    http://google.github.io/styleguide/pyguide.html
 """
 from ._version import __version__
+from .spotifyclient import SpotifyClient
+from .slackapi import Slack
 
 __author__ = '''Oriol Fabregas <fabregas.oriol@gmail.com>'''
 __docformat__ = '''google'''
@@ -44,3 +46,5 @@ __status__ = '''Development'''  # "Prototype", "Development", "Production".
 
 # This is to 'use' the module(s), so lint doesn't complain
 assert __version__
+assert SpotifyClient
+assert Slack

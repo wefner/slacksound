@@ -111,6 +111,13 @@ class Slack(object):
                 bot_id = user.get('id')
         return bot_id
 
+    def post_message(self, message, channel):
+        self.client.api_call("chat.postMessage",
+                              channel=channel,
+                              text=message,
+                              as_user=True)
+        return True
+
 
 class Member(object):
     def __init__(self, member_details):

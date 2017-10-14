@@ -14,7 +14,7 @@ class SpotifyClient(object):
                  client_id,
                  client_secret,
                  username,
-                 passsword,
+                 password,
                  callback,
                  scope):
         self._logger = logging.getLogger('{base}.{suffix}'
@@ -24,8 +24,8 @@ class SpotifyClient(object):
         self._username = username
         self._spotify = Spotify(client_id=client_id,
                                 client_secret=client_secret,
-                                username=self._username,
-                                password=passsword,
+                                username=username,
+                                password=password,
                                 callback=callback,
                                 scope=scope)
         self._playlists = None
@@ -47,6 +47,7 @@ class SpotifyClient(object):
     def add_song_to_playlist(self, song_id, playlist_name):
         for playlist in self.playlists.get('items'):
             if playlist.get('name') == playlist_name:
+                print("adding song")
                 self._spotify.user_playlist_add_tracks(user=self._username,
                                                  playlist_id=playlist.get('uri'),
                                                  tracks=[song_id])
