@@ -46,6 +46,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+
 __author__ = '''Oriol Fabregas <fabregas.oriol@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-10-13'''
@@ -209,8 +210,6 @@ def main():
                             except AttributeError:
                                 slack.post_message("Couldn't find the song",
                                                    config_details.channel)
-                            break
-
 
 if __name__ == '__main__':
     start_time = time.time()

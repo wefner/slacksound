@@ -16,3 +16,8 @@ History
 * CLI draft
 * Credentials parsing
 * Minimal logic
+
+0.3 (2017-10-14)
+----------------
+
+* Reaction name and reaction count configurable
