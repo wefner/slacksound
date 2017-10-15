@@ -65,7 +65,8 @@ LOGGER.addHandler(logging.NullHandler())
 
 SlackSound = namedtuple('Config', ['playlist',
                                    'reaction',
-                                   'channel'])
+                                   'channel',
+                                   'count'])
 
 
 def get_arguments():
@@ -74,7 +75,7 @@ def get_arguments():
     Returns the args as parsed from the argsparser.
     """
     # https://docs.python.org/3/library/argparse.html
-    parser = argparse.ArgumentParser(description='''{{cookiecutter.project_short_description}}''')
+    parser = argparse.ArgumentParser(description='''Create playlists democratically by reactions in Slack''')
     parser.add_argument('--log-config',
                         '-l',
                         action='store',
@@ -92,15 +93,11 @@ def get_arguments():
                                  'WARNING',
                                  'ERROR',
                                  'CRITICAL'])
-
     parser.add_argument('--credentials',
                         dest='credentials',
-                        action='store_true',
+                        action='store',
                         default=False,
                         required=False)
-    parser.add_argument('--no-feature',
-                        dest='feature',
-                        action='store_false')
     args = parser.parse_args()
     return args
 
@@ -132,7 +129,7 @@ def setup_logging(args):
         LOGGER.addHandler(handler)
 
 
-def get_credentials(filename=None):
+def get_credentials(filename=False):
     """
     Reads credentials file
 
@@ -145,8 +142,8 @@ def get_credentials(filename=None):
         credentials_file = filename
     else:
         credentials_file = '{home}/.slacksound'.format(home=os.path.expanduser('~'))
-        LOGGER.info("Using credentials file %s", credentials_file)
 
+    LOGGER.info("Using credentials file %s", credentials_file)
     if not os.path.isfile(credentials_file):
         raise OSError('File not found')
     config = configparser.ConfigParser()
@@ -164,19 +161,15 @@ def connect_spotify(credentials):
     return spotify
 
 
-def connect_slack(credentials):
-    slack = Slack(credentials.get('slack', 'token'), bot=True)
-    return slack
-
-
 def sanitize_title(title):
     return title.split('(')[0].strip()
 
 
 def get_config_details(credentials):
     config = SlackSound(playlist=credentials.get('spotify', 'playlist'),
-                       reaction=credentials.get('slack', 'reaction'),
-                       channel=credentials.get('slack', 'channel'))
+                        reaction=credentials.get('slack', 'reaction'),
+                        channel=credentials.get('slack', 'channel'),
+                        count=int(credentials.get('slack', 'count')))
     return config
 
 
@@ -186,14 +179,12 @@ def main():
     This method holds what you want to execute when
     the script is run on command line.
     """
-    queue = {}
     args = get_arguments()
     setup_logging(args)
-    # credentials = get_credentials(args.credentials)
-    credentials = get_credentials()
+    credentials = get_credentials(args.credentials)
     config_details = get_config_details(credentials)
     spotify = connect_spotify(credentials)
-    slack = connect_slack(credentials)
+    slack = Slack(credentials.get('slack', 'token'), bot=True)
     slack_playlist = slack.get_group_by_name(config_details.channel)
     spotify.delete_tracks_playlist(config_details.playlist)
     slack.post_message("Jukebox started!", config_details.channel)
@@ -206,18 +197,9 @@ def main():
                 for reaction in message.reaction:
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
-                        queue[sanitized_title] = {}
-                        queue[sanitized_title]['reaction'] = reaction.name
-                        queue[sanitized_title][
-                            'reaction_count'] = reaction.count
-                    print('QUEUE: {}'.format(queue))
                     song_id = spotify.get_song_id_by_name(sanitized_title)
-                    print('SONNG_ID {}'.format(song_id))
-                    print('PLIST {}'.format(
-                        spotify.get_songs_in_playlist(config_details.playlist)))
-                    if song_id not in spotify.get_songs_in_playlist(
-                        config_details.playlist):
-                        if queue[sanitized_title]['reaction_count'] >= 1:
+                    if song_id not in spotify.get_songs_in_playlist(config_details.playlist):
+                        if reaction.count >= config_details.count and reaction.name == config_details.reaction:
                             try:
                                 spotify.add_song_to_playlist(song_id,
                                                              config_details.playlist)
@@ -227,7 +209,7 @@ def main():
                             except AttributeError:
                                 slack.post_message("Couldn't find the song",
                                                    config_details.channel)
-                                break
+                            break
 
 
 if __name__ == '__main__':
