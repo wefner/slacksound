@@ -191,7 +191,6 @@ def main():
     slack.post_message("Jukebox started!", config_details.channel)
 
     while True:
-        print(slack.client.rtm_read())
         time.sleep(1)
         for message in slack_playlist.history.messages:
             if message.unix_time >= start_time:
@@ -199,8 +198,8 @@ def main():
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
                     song_id = spotify.get_song_id_by_name(sanitized_title)
-                    if song_id not in spotify.get_songs_in_playlist(config_details.playlist):
-                        if reaction.count >= config_details.count and reaction.name == config_details.reaction:
+                    if reaction.count >= config_details.count and reaction.name == config_details.reaction:
+                        if song_id not in spotify.get_songs_in_playlist(config_details.playlist):
                             try:
                                 spotify.add_song_to_playlist(song_id,
                                                              config_details.playlist)
@@ -210,6 +209,7 @@ def main():
                             except AttributeError:
                                 slack.post_message("Couldn't find the song",
                                                    config_details.channel)
+
 
 if __name__ == '__main__':
     start_time = time.time()

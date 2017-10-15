@@ -56,6 +56,13 @@ LOGGER.addHandler(logging.NullHandler())
 
 class Slack(object):
     def __init__(self, token, bot=False):
+        """
+        Initialise object. If bot is true it will use the RTM API
+
+        Args:
+            token: string
+            bot: boolean
+        """
         self.client = SlackClient(token)
         if bot:
             self.client = SlackClient(token)
@@ -66,6 +73,14 @@ class Slack(object):
 
     @property
     def channels(self, **kwargs):
+        """
+        Gets all channels in a Slack team.
+
+        Args:
+            **kwargs: extra kwargs
+
+        Returns: list of Channel objects
+        """
         if not self.__channels:
             channels_list = self.client.api_call("channels.list", **kwargs)
             for channel in channels_list.get('channels', {}):
@@ -74,6 +89,15 @@ class Slack(object):
 
     @property
     def groups(self, **kwargs):
+        """
+        Gets all groups in a Slack team.
+
+        Args:
+            **kwargs: extra kwargs
+
+        Returns: list of Group objects
+
+        """
         if not self.__groups:
             groups_list = self.client.api_call("groups.list", **kwargs)
             for group in groups_list.get('groups', {}):
@@ -82,6 +106,15 @@ class Slack(object):
 
     @property
     def users(self, **kwargs):
+        """
+        Gets all users in a Slack team.
+
+        Args:
+            **kwargs: extra kwargs
+
+        Returns: list of Member objects
+
+        """
         if not self.__users:
             users_list = self.client.api_call("users.list", **kwargs)
             for user in users_list.get('members', []):
@@ -89,6 +122,15 @@ class Slack(object):
         return self.__users
 
     def get_channel_by_name(self, channel_name):
+        """
+        Gets one channel in a Team
+
+        Args:
+            channel_name: string
+
+        Returns: Channel object
+
+        """
         channel_object = None
         for channel in self.channels:
             if channel.name_normalized == channel_name:
@@ -96,26 +138,37 @@ class Slack(object):
         return channel_object
 
     def get_group_by_name(self, group_name):
+        """
+        Gets one group in a Team
+
+        Args:
+            group_name: string
+
+        Returns: Group object
+
+        """
         group_object = None
         for group in self.groups:
             if group.name_normalized == group_name:
                 group_object = group
         return group_object
 
-    def get_bot_id_by_name(self, bot_name):
-        api_call = self.client.api_call("users.list")
-        users = api_call.get('members')
-        bot_id = None
-        for user in users:
-            if 'name' in user and user.get('name') == bot_name:
-                bot_id = user.get('id')
-        return bot_id
-
     def post_message(self, message, channel):
+        """
+        Posts a message in a group or channel as the user who is owner of the
+        token
+
+        Args:
+            message: string
+            channel: string
+
+        Returns:
+
+        """
         self.client.api_call("chat.postMessage",
-                              channel=channel,
-                              text=message,
-                              as_user=True)
+                             channel=channel,
+                             text=message,
+                             as_user=True)
         return True
 
 
