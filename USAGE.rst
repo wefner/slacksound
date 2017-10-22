@@ -6,7 +6,7 @@ Usage
 Slack
 -----
 The first step is to create a Slack bot. Instructions
-can be found `<here> https://api.slack.com/bot-users`_ under the title
+can be found `here <https://api.slack.com/bot-users>`_ under the title
 ``How do I create custom bot users for my workspace?``
 
 You can give it a name and assign an avatar to it. This will make it easier later
@@ -19,7 +19,7 @@ communicate to Slack API.
 Spotify
 -------
 The second step is to register an APP in your Spotify account. You can follow
-the instructions on how to do this in `<here> http://spotifylib.readthedocs.io/en/latest/usage.html#instructions`_
+the instructions on how to do this in `here <http://spotifylib.readthedocs.io/en/latest/usage.html#instructions>`_
 
 
 Configuration

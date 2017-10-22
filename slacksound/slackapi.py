@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# File: slacksound.py
+# File: slackapi.py
 #
 # Copyright 2017 Oriol Fabregas
 #
@@ -24,7 +24,7 @@
 #
 
 """
-Main code for slacksound
+Main code for slackapi
 
 .. _Google Python Style Guide:
    http://google.github.io/styleguide/pyguide.html
@@ -35,7 +35,6 @@ import logging
 import tzlocal
 from slackclient import SlackClient
 from datetime import datetime
-
 
 __author__ = '''Oriol Fabregas <fabregas.oriol@gmail.com>'''
 __docformat__ = '''google'''
@@ -173,133 +172,311 @@ class Slack(object):
 
 
 class Member(object):
+    """
+    Model for a Member
+
+    Not all attributes are populated here though.
+
+    https://api.slack.com/types/user
+    """
     def __init__(self, member_details):
+        """
+        Initialise object
+
+        Args:
+            member_details: dictionary
+        """
         self._member_details = member_details
 
     @property
     def color(self):
+        """
+        Used in some clients to display a colored username.
+
+        Returns: string
+        """
         return self._member_details.get('color', None)
 
     @property
     def deleted(self):
+        """
+        Active/Inactive users
+
+        Returns: boolean
+        """
         return self._member_details.get('deleted', None)
 
     @property
     def member_id(self):
+        """
+        Member ID
+
+        Returns: string
+
+        """
         return self._member_details.get('id', None)
 
     @property
     def is_admin(self):
+        """
+        Whether this user is admin or not
+
+        Returns: boolean
+
+        """
         return self._member_details.get('is_admin', None)
 
     @property
     def email(self):
+        """
+        Email of the member
+
+        Returns: string
+
+        """
         return self._member_details.get('profile').get('email', None)
 
 
 class Group(object):
-    def __init__(self, slac_instance, group_details):
-        self._slack_instance = slac_instance
+    """
+    Model for a group
+
+    Not all attributes are populated here though.
+
+    https://api.slack.com/types/group
+    """
+    def __init__(self, slack_instance, group_details):
+        """
+        Initialise object
+
+        Args:
+            slack_instance: SlackClient instance
+            group_details: dictionary
+        """
+        self._slack_instance = slack_instance
         self._group_details = group_details
 
     @property
     def group_id(self):
+        """
+        Group ID
+
+        Returns: string
+
+        """
         return self._group_details.get('id', None)
 
     @property
     def name(self):
+        """
+        Name of the group
+
+        Returns: string
+
+        """
         return self._group_details.get('name', None)
 
     @property
     def is_general(self):
+        """
+        Whether the group is general or not
+
+        Returns: boolean
+
+        """
         return self._group_details.get('is_general', None)
 
     @property
     def name_normalized(self):
+        """
+        Normalized name of the group
+
+        Returns: string
+
+        """
         return self._group_details.get('name_normalized', None)
 
     @property
     def created(self):
+        """
+        Unix time converted to datetime object
+
+        Returns: datetime object
+
+        """
         unix_timestamp = self._group_details.get('created', None)
-        date = datetime.fromtimestamp(unix_timestamp, tzlocal.get_localzone())
+        date = datetime.fromtimestamp(float(unix_timestamp),
+                                      tzlocal.get_localzone())
         return date
 
     @property
     def history(self):
+        """
+        Chat history of the group
+
+        Returns: list of Message objects
+
+        """
         ch_history = self._slack_instance.client.api_call(
                                     method="groups.history",
                                     channel=self.group_id)
-        return History(ch_history)
+        return [Message(history_message) for history_message in
+                ch_history.get('messages')]
 
 
 class Channel(object):
+    """
+    Model for a Channel
+
+    Not all attributes are populated here though.
+
+    https://api.slack.com/types/channel
+    """
     def __init__(self, slack_instance, channel_details):
+        """
+        Initialise object
+
+        Args:
+            slack_instance: SlackClient instance
+            channel_details: dictionary
+        """
         self.__slack_instance = slack_instance
         self._channel_details = channel_details
 
     @property
     def channel_id(self):
+        """
+        Channel ID
+
+        Returns: string
+
+        """
         return self._channel_details.get('id', None)
 
     @property
     def name(self):
+        """
+        Name of the channel
+
+        Returns: string
+
+        """
         return self._channel_details.get('name', None)
 
     @property
     def is_general(self):
+        """
+        Whether the channel is general or not
+
+        Returns: boolean
+
+        """
         return self._channel_details.get('is_general', None)
 
     @property
     def name_normalized(self):
+        """
+        Normalized name of the channel
+
+        Returns: string
+
+        """
         return self._channel_details.get('name_normalized', None)
 
     @property
     def created(self):
+        """
+        Unix time converted to datetime object
+
+        Returns: datetime object
+
+        """
         unix_timestamp = self._channel_details.get('created', None)
-        date = datetime.fromtimestamp(unix_timestamp, tzlocal.get_localzone())
+        date = datetime.fromtimestamp(float(unix_timestamp),
+                                      tzlocal.get_localzone())
         return date
 
     @property
     def history(self):
+        """
+        Chat history of the channel
+
+        Returns: list of Message objects
+
+        """
         ch_history = self.__slack_instance.client.api_call(
                                     method="channels.history",
                                     channel=self.channel_id)
-        return History(ch_history)
-
-
-class History(object):
-    def __init__(self, history_details):
-        self._history_details = history_details
-
-    @property
-    def messages(self):
         return [Message(history_message) for history_message in
-                self._history_details.get('messages')]
+                ch_history.get('messages')]
 
 
 class Message(object):
+    """
+    Model for a Message
+
+    Not all attributes are populated here though.
+
+    https://api.slack.com/events/message
+    """
     def __init__(self, message_details):
+        """
+        Initialise object
+
+        Args:
+            message_details: dictionary
+        """
         self._message_details = message_details
 
     @property
     def text(self):
+        """
+        Text of the message
+
+        Returns: string
+
+        """
         return self._message_details.get('text', None)
 
     @property
     def type(self):
+        """
+        SubType of the Message
+
+        Returns: string
+
+        """
         return self._message_details.get('type', None)
 
     @property
     def attachments(self):
+        """
+        Attachments for a Message, if any
+
+        Returns: list of Attachment objects
+
+        """
         return [Attachment(m_attachment) for m_attachment in
                 self._message_details.get('attachments', [])]
 
     @property
     def user(self):
+        """
+        ID of the user speaking or sent the message
+
+        Returns: string
+
+        """
         return self._message_details.get('user', None)
 
     @property
     def datetime(self):
+        """
+        Unix time converted to datetime object
+
+        Returns: datetime object
+
+        """
         unix_timestamp = self._message_details.get('ts', None)
         date = datetime.fromtimestamp(float(unix_timestamp),
                                       tzlocal.get_localzone())
@@ -307,51 +484,116 @@ class Message(object):
 
     @property
     def unix_time(self):
+        """
+        Unix time. Useful for time comparison
+
+        Returns: float
+
+        """
         return float(self._message_details.get('ts', None))
 
     @property
     def reaction(self):
+        """
+        Reactions of the message
+
+        Returns: list of Reaction objects
+
+        """
         return [Reaction(reaction) for reaction
                 in self._message_details.get('reactions', [])]
 
 
 class Reaction(object):
+    """
+    Model for a Reaction
+
+    These are Emoji icons for a message
+    """
+
     def __init__(self, reaction_details):
+        """
+        Initialise object
+
+        Args:
+            reaction_details: dictionary
+        """
         self._reaction_details = reaction_details
 
     @property
     def count(self):
+        """
+        Count of a reaction
+
+        Returns: integer
+
+        """
         return self._reaction_details.get('count', None)
 
     @property
     def name(self):
+        """
+        Name of the reaction
+
+        Returns: string
+
+        """
         return self._reaction_details.get('name', None)
 
     @property
     def users(self):
-        return self._reaction_details.get('users', None)
+        """
+        User IDs who reacted on the reaction
+
+        Returns: list of user ID
+
+        """
+        return self._reaction_details.get('users', [])
 
 
 class Attachment(object):
+    """
+    Model for an Attachment
+
+    Not all attributes are populated here though.
+
+    https://api.slack.com/docs/message-attachments
+    """
     def __init__(self, attachment_details):
+        """
+        Initialise object
+
+        Args:
+            attachment_details: dictionary
+        """
         self._attachment_details = attachment_details
 
     @property
     def author_link(self):
+        """
+        A valid URL that will hyperlink the author_name text mentioned above.
+
+        Returns: string
+
+        """
         return self._attachment_details.get('author_link', None)
 
     @property
-    def from_url(self):
-        return self._attachment_details.get('from_url', None)
-
-    @property
-    def from_url(self):
-        return self._attachment_details.get('from_url', None)
-
-    @property
     def author_name(self):
+        """
+        Small text used to display the author's name.
+
+        Returns: string
+
+        """
         return self._attachment_details.get('author_name', None)
 
     @property
     def title(self):
+        """
+        Title of the attachment
+
+        Returns: string
+
+        """
         return self._attachment_details.get('title', None)

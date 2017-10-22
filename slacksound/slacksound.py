@@ -46,7 +46,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-
 __author__ = '''Oriol Fabregas <fabregas.oriol@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-10-13'''
@@ -132,10 +131,15 @@ def setup_logging(args):
 
 def get_credentials(filename=False):
     """
+    Args:
+        filename: path of the filename
+
     Reads credentials file
 
-    Locates credentials fire in ~/.slacksound and loads them. This file must be
-    a INI file
+    Locates credentials file in ~/.slacksound and loads them by default.
+
+    This file must be a INI type and if a filename is provided, it will try to
+    load this one.
 
     :return: ConfigParser instance
     """
@@ -163,6 +167,22 @@ def connect_spotify(credentials):
 
 
 def sanitize_title(title):
+    """
+    Gets the artist and song name only
+
+    Splits the string by the the first open parenthesis and gets first item
+    in the list
+
+    Examples:
+        in: 'Eric Clapton - Cocaine (Original Video)'
+        out: 'Eric Clapton - Cocaine'
+
+    Args:
+        title: string
+
+    Returns: string
+
+    """
     return title.split('(')[0].strip()
 
 
@@ -188,7 +208,7 @@ def main():
     slack = Slack(credentials.get('slack', 'token'), bot=True)
     slack_playlist = slack.get_group_by_name(config_details.channel)
     spotify.delete_tracks_playlist(config_details.playlist)
-    slack.post_message("Jukebox started!", config_details.channel)
+    slack.post_message("Slacksound started!", config_details.channel)
 
     while True:
         time.sleep(1)
@@ -205,7 +225,7 @@ def main():
                                                              config_details.playlist)
                                 slack.post_message(
                                     "Song {} added".format(sanitized_title),
-                                    'testapi')
+                                    config_details.channel)
                             except AttributeError:
                                 slack.post_message("Couldn't find the song",
                                                    config_details.channel)

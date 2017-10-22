@@ -1,22 +1,20 @@
 ============================
-slacksound
+SlackSound
 ============================
 
 Create playlists democratically by reactions in Slack
 
+!! THIS IS STILL A BETA !!
 
-* Documentation: https://slacksound.readthedocs.org/en/latest
+* Documentation (soon): https://slacksound.readthedocs.org/en/latest
 
 Features
 --------
-
-* Get Youtube videos reactions from message attachments and add the song to
-a Spotify playlist.
+* Get Youtube videos reactions from message attachments and add the song to a Spotify playlist.
 
 
 How does it work
 ----------------
-
 The application acts as a middle man between Slack and Spotify by getting the
 reactions count from a message's attachment and then looking up the title on
 Spotify's. If the title has been found, it will add the one that has best
