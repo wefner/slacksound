@@ -73,42 +73,86 @@ class SpotifyClient(object):
     @property
     def playlists(self):
         if not self._playlists:
-            self._playlists = self._spotify.user_playlists(self._username)
+            raw_playlists = self._spotify.user_playlists(self._username)
+            self._playlists = [Playlist(self._username, self._spotify, playlist)
+                               for playlist in raw_playlists.get('items')]
         return self._playlists
 
     def get_song_id_by_name(self, song_title):
         song_uri = None
         songs = self._spotify.search(q=song_title, limit=5, type='track')
         self._logger.debug('song title: {}'.format(song_title))
+        print(songs)
         for song in songs.get('tracks').get('items'):
             song_uri = song.get('uri')
         return song_uri
 
-    def add_song_to_playlist(self, song_id, playlist_name):
-        for playlist in self.playlists.get('items'):
-            if playlist.get('name') == playlist_name:
-                print("adding song")
-                self._spotify.user_playlist_add_tracks(user=self._username,
-                                                 playlist_id=playlist.get('uri'),
-                                                 tracks=[song_id])
-        return True
+    def get_playlist_by_name(self, playlist_name):
+        playlist = next((plist for plist in self.playlists
+                         if plist.name == playlist_name), None)
+        return playlist
 
-    def get_songs_in_playlist(self, playlist_name):
-        songs_playlist = None
-        for playlist in self.playlists.get('items'):
-            if playlist.get('name') == playlist_name:
-                songs_playlist = self._spotify.user_playlist_tracks(user=self._username,
-                                                              playlist_id=playlist.get('id'))
+
+class Track(object):
+    def __init__(self, track_details):
+        self._track_details = track_details
+
+    def get_track_by_name(self, track_name):
+        pass
+
+
+class Playlist(object):
+    def __init__(self, username, spotify_instance, playlist_details):
+        self._logger = logging.getLogger('{base}.{suffix}'
+                                         .format(base=LOGGER_BASENAME,
+                                                 suffix=self.__class__.__name__)
+                                         )
+        self._username = username
+        self._spotify = spotify_instance
+        self._playlist_details = playlist_details
+
+    def get_track_ids(self):
+        songs_playlist = self._spotify.user_playlist_tracks(user=self._username,
+                                                            playlist_id=self.playlist_id)
         return [track.get('track').get('uri')
                 for track in songs_playlist.get('items')]
 
-    def get_plalist_id_by_name(self, playlist_name):
-        for playlist in self.playlists.get('items'):
-            if playlist.get('name') == playlist_name:
-                return playlist.get('id')
+    def delete_all_tracks(self):
+        return self._spotify.user_playlist_remove_all_occurrences_of_tracks(self._username,
+                                                                            self.playlist_id,
+                                                                            self.get_track_ids())
 
-    def delete_tracks_playlist(self, playlist):
-        playlist_id = self.get_plalist_id_by_name(playlist)
-        self._spotify.user_playlist_remove_all_occurrences_of_tracks(self._username,
-                                                                     playlist_id,
-                                                                     self.get_songs_in_playlist(playlist))
+    def add_track(self, track_id):
+        self._logger.info("Adding song {}".format(track_id))
+        self._spotify.user_playlist_add_tracks(user=self._username,
+                                               playlist_id=self.uri,
+                                               tracks=[track_id])
+        return True
+
+    @property
+    def href(self):
+        return self._playlist_details.get('href', None)
+
+    @property
+    def collaborative(self):
+        return self._playlist_details.get('collaborative', None)
+
+    @property
+    def playlist_id(self):
+        return self._playlist_details.get('id', None)
+
+    @property
+    def name(self):
+        return self._playlist_details.get('name', None)
+
+    @property
+    def public(self):
+        return self._playlist_details.get('public', None)
+
+    @property
+    def uri(self):
+        return self._playlist_details.get('uri', None)
+
+    @property
+    def tracks(self):
+        return self._playlist_details.get('tracks', {})
