@@ -125,7 +125,7 @@ class Playlist(object):
         self._spotify = spotify_instance
         self._playlist_details = playlist_details
 
-    def get_track_ids(self):
+    def get_track_uris(self):
         songs_playlist = self._spotify.user_playlist_tracks(user=self._username,
                                                             playlist_id=self.playlist_id)
         return [track.get('track').get('uri')
@@ -134,7 +134,7 @@ class Playlist(object):
     def delete_all_tracks(self):
         return self._spotify.user_playlist_remove_all_occurrences_of_tracks(self._username,
                                                                             self.playlist_id,
-                                                                            self.get_track_ids())
+                                                                            self.get_track_uris())
 
     def add_track(self, track_id):
         self._logger.info("Adding song {}".format(track_id))

@@ -231,7 +231,7 @@ def main():
                                            config_details.channel)
                     track = get_most_popular_track(tracks)
                     if reaction.count >= config_details.count and reaction.name == config_details.reaction:
-                        if track.uri not in playlist.get_track_ids():
+                        if track.uri not in playlist.get_track_uris():
                             try:
                                 playlist.add_track(track.track_id)
                                 slack.post_message(
