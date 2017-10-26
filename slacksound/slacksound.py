@@ -186,6 +186,12 @@ def sanitize_title(title):
     return title.split('(')[0].strip()
 
 
+def get_most_popular_track(tracks):
+    sorted_tracks = sorted(tracks, key=lambda x: x.popularity, reverse=True)
+    LOGGER.debug(sorted_tracks)
+    return sorted_tracks[0]
+
+
 def get_config_details(credentials):
     config = SlackSound(playlist=credentials.get('spotify', 'playlist'),
                         reaction=credentials.get('slack', 'reaction'),
@@ -205,24 +211,29 @@ def main():
     credentials = get_credentials(args.credentials)
     config_details = get_config_details(credentials)
     spotify = connect_spotify(credentials)
+    playlist = spotify.get_playlist_by_name(config_details.playlist)
     slack = Slack(credentials.get('slack', 'token'), bot=True)
     slack_playlist = slack.get_group_by_name(config_details.channel)
-    spotify.delete_tracks_playlist(config_details.playlist)
-    slack.post_message("Slacksound started!", config_details.channel)
+    print(slack_playlist.history)
+    playlist.delete_all_tracks()
+    slack.post_message("SlackSound started!", config_details.channel)
 
     while True:
         time.sleep(1)
-        for message in slack_playlist.history.messages:
+        for message in slack_playlist.history:
             if message.unix_time >= start_time:
                 for reaction in message.reaction:
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
-                    song_id = spotify.get_song_id_by_name(sanitized_title)
+                    tracks = spotify.get_track_by_title(sanitized_title)
+                    if not tracks:
+                        slack.post_message("Couldn't find the song",
+                                           config_details.channel)
+                    track = get_most_popular_track(tracks)
                     if reaction.count >= config_details.count and reaction.name == config_details.reaction:
-                        if song_id not in spotify.get_songs_in_playlist(config_details.playlist):
+                        if track.uri not in playlist.get_track_uris():
                             try:
-                                spotify.add_song_to_playlist(song_id,
-                                                             config_details.playlist)
+                                playlist.add_track(track.track_id)
                                 slack.post_message(
                                     "Song {} added".format(sanitized_title),
                                     config_details.channel)
