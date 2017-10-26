@@ -78,14 +78,11 @@ class SpotifyClient(object):
                                for playlist in raw_playlists.get('items')]
         return self._playlists
 
-    def get_song_id_by_name(self, song_title):
-        song_uri = None
-        songs = self._spotify.search(q=song_title, limit=5, type='track')
-        self._logger.debug('song title: {}'.format(song_title))
+    def get_track_by_title(self, track_title, limit=5):
+        self._logger.debug('Looking for title: {}'.format(track_title))
+        songs = self._spotify.search(q=track_title, limit=limit, type='track')
         print(songs)
-        for song in songs.get('tracks').get('items'):
-            song_uri = song.get('uri')
-        return song_uri
+        return [Track(track) for track in songs.get('tracks', {}).get('items')]
 
     def get_playlist_by_name(self, playlist_name):
         playlist = next((plist for plist in self.playlists
@@ -97,8 +94,25 @@ class Track(object):
     def __init__(self, track_details):
         self._track_details = track_details
 
-    def get_track_by_name(self, track_name):
-        pass
+    @property
+    def uri(self):
+        return self._track_details.get('uri', None)
+
+    @property
+    def track_id(self):
+        return self._track_details.get('id', None)
+
+    @property
+    def popularity(self):
+        return self._track_details.get('popularity', None)
+
+    @property
+    def name(self):
+        return self._track_details.get('name', None)
+
+    @property
+    def duration_ms(self):
+        return self._track_details.get('duration_ms', None)
 
 
 class Playlist(object):
