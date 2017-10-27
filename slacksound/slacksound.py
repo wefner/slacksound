@@ -236,7 +236,7 @@ def main():
                     track = get_most_popular_track(tracks)
                     if track:
                         if reaction.count >= config_details.count and reaction.name == config_details.reaction:
-                            track_uris = [plist.uri for plist in playlist.get_tracks()]
+                            track_uris = [plist.uri for plist in playlist.tracks]
                             if track.uri not in track_uris:
                                 try:
                                     playlist.add_track(track.track_id)
