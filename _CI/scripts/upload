@@ -1,6 +1,6 @@
 #!/bin/bash --login
 # we want all these files to exist in the actual package
-required_files=(".VERSION" "LICENSE" "AUTHORS.rst" "CONTRIBUTING.rst" "HISTORY.rst" "README.rst" "USAGE.rst" "Pipfile" "Pipfile.lock" "requirements.txt" "requirements_dev.txt")
+required_files=(".VERSION" "LICENSE" "AUTHORS.rst" "CONTRIBUTING.rst" "HISTORY.rst" "README.rst" "USAGE.rst" "Pipfile" "Pipfile.lock" "requirements.txt" "dev-requirements.txt")
 
 cd $(dirname $0)/../..
 
@@ -13,10 +13,10 @@ rm -rf build dist
 echo "Locking requirements to create up to date files"
 pipenv lock
 
-echo "Creating requiremens.txt"
+echo "Creating requirements.txt"
 ./_CI/bin/create_requirements.py default
 
-echo "Creating dev-requiremens.txt"
+echo "Creating dev-requirements.txt"
 ./_CI/bin/create_requirements.py develop
 
 
@@ -35,9 +35,9 @@ for file in "${required_files[@]}"
         rm slacksound/$file
     done
 
-echo "Removing requiremens.txt"
+echo "Removing requirements.txt"
 rm requirements.txt
 
-echo "Removing dev-requiremens.txt"
+echo "Removing dev-requirements.txt"
 rm dev-requirements.txt
 
