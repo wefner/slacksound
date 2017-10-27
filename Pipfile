@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-
 pipenv = "*"
 sphinx = "*"
 sphinx_rtd_theme = "*"
@@ -16,7 +15,6 @@ tox = "*"
 "logilab-common" = "*"
 betamax = "*"
 hypothesis = "*"
-
 
 [packages]
 slackclient = "*"

@@ -189,6 +189,8 @@ def sanitize_title(title):
 def get_most_popular_track(tracks):
     sorted_tracks = sorted(tracks, key=lambda x: x.popularity, reverse=True)
     LOGGER.debug(sorted_tracks)
+    if not sorted_tracks:
+        return None
     return sorted_tracks[0]
 
 
@@ -214,9 +216,10 @@ def main():
     playlist = spotify.get_playlist_by_name(config_details.playlist)
     slack = Slack(credentials.get('slack', 'token'), bot=True)
     slack_playlist = slack.get_group_by_name(config_details.channel)
-    print(slack_playlist.history)
     playlist.delete_all_tracks()
     slack.post_message("SlackSound started!", config_details.channel)
+
+    blacklisted = []
 
     while True:
         time.sleep(1)
@@ -226,20 +229,23 @@ def main():
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
                     tracks = spotify.get_track_by_title(sanitized_title)
-                    if not tracks:
+                    if not tracks and sanitized_title not in blacklisted:
+                        blacklisted.append(sanitized_title)
                         slack.post_message("Couldn't find the song",
                                            config_details.channel)
                     track = get_most_popular_track(tracks)
-                    if reaction.count >= config_details.count and reaction.name == config_details.reaction:
-                        if track.uri not in playlist.get_track_uris():
-                            try:
-                                playlist.add_track(track.track_id)
-                                slack.post_message(
-                                    "Song {} added".format(sanitized_title),
-                                    config_details.channel)
-                            except AttributeError:
-                                slack.post_message("Couldn't find the song",
-                                                   config_details.channel)
+                    if track:
+                        if reaction.count >= config_details.count and reaction.name == config_details.reaction:
+                            track_uris = [plist.uri for plist in playlist.get_tracks()]
+                            if track.uri not in track_uris:
+                                try:
+                                    playlist.add_track(track.track_id)
+                                    slack.post_message(
+                                        "Song {} added".format(sanitized_title),
+                                        config_details.channel)
+                                except AttributeError:
+                                    slack.post_message("Couldn't find the song",
+                                                       config_details.channel)
 
 
 if __name__ == '__main__':
