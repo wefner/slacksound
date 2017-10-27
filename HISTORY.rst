@@ -42,3 +42,9 @@ History
 ------------------
 
 * Logging for user
+
+0.1.2 (2017-10-27)
+------------------
+
+* Fix local variable referenced before assignment
+

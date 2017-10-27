@@ -235,22 +235,22 @@ def main():
                 for reaction in message.reaction:
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
-                    tracks = spotify.get_track_by_title(sanitized_title)
-                    if not tracks and sanitized_title not in blacklisted:
-                        LOGGER.warning("Couldn't find the song")
-                        blacklisted.append(sanitized_title)
-                        slack.post_message("Couldn't find the song",
-                                           config_details.channel)
-                    track = get_most_popular_track(tracks)
-                    if track:
-                        if reaction.count >= config_details.count and reaction.name == config_details.reaction:
-                            track_uris = [plist.uri for plist in playlist.tracks]
-                            if track.uri not in track_uris:
-                                playlist.add_track(track.track_id)
-                                LOGGER.info('Track %s added to playlist', track.name)
-                                slack.post_message(
-                                    "Song {} added".format(sanitized_title),
-                                    config_details.channel)
+                        tracks = spotify.get_track_by_title(sanitized_title)
+                        if not tracks and sanitized_title not in blacklisted:
+                            LOGGER.warning("Couldn't find the song")
+                            blacklisted.append(sanitized_title)
+                            slack.post_message("Couldn't find the song",
+                                               config_details.channel)
+                        track = get_most_popular_track(tracks)
+                        if track:
+                            if reaction.count >= config_details.count and reaction.name == config_details.reaction:
+                                track_uris = [plist.uri for plist in playlist.tracks]
+                                if track.uri not in track_uris:
+                                    playlist.add_track(track.track_id)
+                                    LOGGER.info('Track %s added to playlist', track.name)
+                                    slack.post_message(
+                                        "Song {} added".format(sanitized_title),
+                                        config_details.channel)
 
 
 if __name__ == '__main__':
