@@ -15,6 +15,8 @@ when reading messages from it on your channel.
 Once your bot is created, it will generate a token for you in order to
 communicate to Slack API.
 
+Do not forget to add the bot user to your channel!
+
 
 Spotify
 -------

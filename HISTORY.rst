@@ -32,3 +32,8 @@ History
 ------------------
 
 * Entrypoint for main
+
+0.1.0 (2017-10-27)
+------------------
+
+* Try a private channel first or fallback as a public one if fails

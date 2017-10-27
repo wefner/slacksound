@@ -218,6 +218,8 @@ def main():
     playlist = spotify.get_playlist_by_name(config_details.playlist)
     slack = Slack(credentials.get('slack', 'token'), bot=True)
     slack_playlist = slack.get_group_by_name(config_details.channel)
+    if not slack_playlist:
+        slack_playlist = slack.get_channel_by_name(config_details.channel)
     playlist.delete_all_tracks()
     slack.post_message("SlackSound started!", config_details.channel)
 
