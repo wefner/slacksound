@@ -116,8 +116,8 @@ class SpotifyClient(object):
         Returns: list of Track objects
 
         """
-        self._logger.debug('Looking for title: {}'.format(track_title))
-        songs = self._spotify.search(q=track_title, limit=limit, type='track')
+        self._logger.debug('Looking for title: %s', track_title)
+        songs = self._spotify.search(q=track_title.encode('utf-8'), limit=limit, type='track')
         return [Track(track) for track in songs.get('tracks', {}).get('items')]
 
     def get_playlist_by_name(self, playlist_name):
@@ -253,7 +253,7 @@ class Playlist(object):
         Returns: Boolean
 
         """
-        self._logger.info("Adding song {}".format(track_id))
+        self._logger.info("Adding song %s", track_id)
         self._spotify.user_playlist_add_tracks(user=self._username,
                                                playlist_id=self.uri,
                                                tracks=[track_id])

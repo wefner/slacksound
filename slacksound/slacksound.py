@@ -60,7 +60,7 @@ __status__ = '''Development'''  # "Prototype", "Development", "Production".
 # This is the main prefix used for logging
 LOGGER_BASENAME = '''slacksound'''
 LOGGER = logging.getLogger(LOGGER_BASENAME)
-LOGGER.addHandler(logging.NullHandler())
+LOGGER.setLevel(logging.DEBUG)
 
 
 SlackSound = namedtuple('Config', ['playlist',
@@ -188,7 +188,6 @@ def sanitize_title(title):
 
 def get_most_popular_track(tracks):
     sorted_tracks = sorted(tracks, key=lambda x: x.popularity, reverse=True)
-    LOGGER.debug(sorted_tracks)
     if not sorted_tracks:
         return None
     return sorted_tracks[0]
@@ -217,23 +216,28 @@ def main():
     spotify = connect_spotify(credentials)
     playlist = spotify.get_playlist_by_name(config_details.playlist)
     slack = Slack(credentials.get('slack', 'token'), bot=True)
-    slack_playlist = slack.get_group_by_name(config_details.channel)
-    if not slack_playlist:
-        slack_playlist = slack.get_channel_by_name(config_details.channel)
+    channel = slack.get_group_by_name(config_details.channel)
+    if not channel:
+        channel = slack.get_channel_by_name(config_details.channel)
+    LOGGER.info("Found channel: %s", channel.name)
     playlist.delete_all_tracks()
-    slack.post_message("SlackSound started!", config_details.channel)
+    slack.post_message("SlackSound started! Add your :{}: reaction to the link. "
+                       "The minimum votes are: {}".format(config_details.reaction,
+                                                          config_details.count),
+                       config_details.channel)
 
     blacklisted = []
 
     while True:
         time.sleep(1)
-        for message in slack_playlist.history:
+        for message in channel.history:
             if message.unix_time >= start_time:
                 for reaction in message.reaction:
                     for attachment in message.attachments:
                         sanitized_title = sanitize_title(attachment.title)
                     tracks = spotify.get_track_by_title(sanitized_title)
                     if not tracks and sanitized_title not in blacklisted:
+                        LOGGER.warning("Couldn't find the song")
                         blacklisted.append(sanitized_title)
                         slack.post_message("Couldn't find the song",
                                            config_details.channel)
@@ -242,14 +246,11 @@ def main():
                         if reaction.count >= config_details.count and reaction.name == config_details.reaction:
                             track_uris = [plist.uri for plist in playlist.tracks]
                             if track.uri not in track_uris:
-                                try:
-                                    playlist.add_track(track.track_id)
-                                    slack.post_message(
-                                        "Song {} added".format(sanitized_title),
-                                        config_details.channel)
-                                except AttributeError:
-                                    slack.post_message("Couldn't find the song",
-                                                       config_details.channel)
+                                playlist.add_track(track.track_id)
+                                LOGGER.info('Track %s added to playlist', track.name)
+                                slack.post_message(
+                                    "Song {} added".format(sanitized_title),
+                                    config_details.channel)
 
 
 if __name__ == '__main__':
