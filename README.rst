@@ -6,7 +6,7 @@ Create playlists democratically by reactions in Slack
 
 !! THIS IS STILL A BETA !!
 
-* Documentation (soon): https://slacksound.readthedocs.org/en/latest
+* Documentation: https://slacksound.readthedocs.org/en/latest
 
 Features
 --------

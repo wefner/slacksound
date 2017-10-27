@@ -35,9 +35,5 @@ for file in "${required_files[@]}"
         rm slacksound/$file
     done
 
-echo "Removing requirements.txt"
-rm requirements.txt
-
 echo "Removing dev-requirements.txt"
 rm dev-requirements.txt
-
