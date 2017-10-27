@@ -37,3 +37,8 @@ History
 ------------------
 
 * Try a private channel first or fallback as a public one if fails
+
+0.1.1 (2017-10-27)
+------------------
+
+* Logging for user
