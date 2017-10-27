@@ -41,6 +41,11 @@ setup(
     license='''MIT''',
     zip_safe=False,
     keywords='''slacksound''',
+    entry_points={
+        'console_scripts': [
+            'slacksound = slacksound.slacksound:main'
+        ]
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

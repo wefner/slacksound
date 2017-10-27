@@ -208,6 +208,8 @@ def main():
     This method holds what you want to execute when
     the script is run on command line.
     """
+    start_time = time.time()
+
     args = get_arguments()
     setup_logging(args)
     credentials = get_credentials(args.credentials)
@@ -249,5 +251,4 @@ def main():
 
 
 if __name__ == '__main__':
-    start_time = time.time()
     main()

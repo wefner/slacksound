@@ -33,6 +33,7 @@ Main code for slackapi
 
 import logging
 import tzlocal
+
 from slackclient import SlackClient
 from datetime import datetime
 
@@ -54,6 +55,8 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 class Slack(object):
+    """SlackClient Wrapper"""
+
     def __init__(self, token, bot=False):
         """
         Initialise object. If bot is true it will use the RTM API
@@ -79,6 +82,7 @@ class Slack(object):
             **kwargs: extra kwargs
 
         Returns: list of Channel objects
+
         """
         if not self.__channels:
             channels_list = self.client.api_call("channels.list", **kwargs)

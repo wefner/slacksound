@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+
 pipenv = "*"
 sphinx = "*"
 sphinx_rtd_theme = "*"
@@ -16,6 +17,8 @@ tox = "*"
 betamax = "*"
 hypothesis = "*"
 
+
 [packages]
 slackclient = "*"
 spotifylib = "*"
+tzlocal = "*"
